@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  lint:
+    name: Run ESLint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: '18.14.2'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Linting
+        run: npm run lint
+
+  tsc:
+    name: Run Type Check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: '18.14.2'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type checking
+        run: tsc
+
+  tests:
+    name: Run Tests
+
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      CLIENT_DASHBOARD_URL: https://dashboard.ablo.ai
+      DATABASE_URL_TEST: postgres://postgres:postgres@localhost:5432/postgres
+      JWT_EXPIRATION_TIME: 1w
+      JWT_SECRET: 619fd97c-9d88-4a5f-a23c-431ba28aba3d
+      AWS_BUCKET_NAME: sr-image-generator
+      AWS_REGION: eu-central-1
+      SENDGRID_API_KEY: SG.RjjaxdFyTcmt8yWtdTebDQ.FT_cg-ggbi-1dSSyISRHz_M1fvZ5PW1XDHvfyNiPAw
+      SENDGRID_SANDBOX_MODE: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: '18.14.2'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: E2E Test
+        run: npm test
