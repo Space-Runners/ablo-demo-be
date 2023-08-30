@@ -21,10 +21,8 @@ import {
 } from '@nestjs/swagger';
 import { DemoUserDto } from '../user/demo-user.dto';
 import { UserService } from '../user/user.service';
-import { DashboardUserDto } from '../user/dashboard-user.dto';
 import { faker } from '@faker-js/faker';
 import { SocialLogin } from './social-login.enum';
-import { TokenPayload } from 'google-auth-library';
 import { ForgotPasswordDto } from './forgot-password.dto';
 import { ResetPasswordDto } from './reset-password.dto';
 import { LoginResponseDto } from './login-response.dto';
@@ -56,20 +54,6 @@ export class AuthController {
     return this.service.login({ email: dto.email, password: dto.password });
   }
 
-  @ApiOperation({ summary: 'Register from Client Dashboard' })
-  @ApiResponse({
-    status: 201,
-    description: 'Registration successful',
-  })
-  @Post('/register-dashboard')
-  async registerDasbboard(
-    @Body() dto: DashboardUserDto,
-  ): Promise<LoginResponseDto> {
-    await this.userService.createDashboardUser(dto);
-
-    return this.service.login({ email: dto.email, password: dto.password });
-  }
-
   @ApiOperation({ summary: 'Google login to demo' })
   @ApiResponse({
     status: 200,
@@ -97,36 +81,6 @@ export class AuthController {
     };
 
     const user = await this.userService.createDemoUser(newUser);
-
-    return this.service.login(user);
-  }
-
-  @ApiOperation({ summary: 'Google login to Client Dashboard' })
-  @ApiResponse({
-    status: 200,
-    description: 'Google login successful',
-  })
-  @Post('/google/login-dashboard')
-  async googleAuthDashboard(@Body('token') token): Promise<LoginResponseDto> {
-    const googleUser: TokenPayload = await this.service.googleLogin(token);
-
-    const existingUser = await this.userService.findOneByEmail(
-      googleUser.email,
-    );
-
-    if (existingUser) {
-      return this.service.login(existingUser, true);
-    }
-
-    const newUser: DashboardUserDto = {
-      email: googleUser.email,
-      name: `${googleUser.given_name} ${googleUser.family_name}`,
-      password: faker.internet.password(),
-      socialLogin: SocialLogin.GOOGLE,
-      socialId: googleUser.sub,
-    };
-
-    const user = await this.userService.createDashboardUser(newUser);
 
     return this.service.login(user);
   }
@@ -170,21 +124,7 @@ export class AuthController {
   @Post('/forgot-password')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
-    await this.service.forgotPassword(dto.email, process.env.DEMO_URL);
-  }
-
-  @ApiOperation({
-    summary:
-      'Initiates a reset password flow on the Client Dashboard - sends user an email with a link to reset password',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Reset password email sent',
-  })
-  @Post('/forgot-password-dashboard')
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async forgotPasswordDashboard(@Body() dto: ForgotPasswordDto) {
-    await this.service.forgotPassword(dto.email, process.env.DASHBOARD_URL);
+    await this.service.forgotPassword(dto.email);
   }
 
   @ApiOperation({
