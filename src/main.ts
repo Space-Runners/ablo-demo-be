@@ -28,8 +28,6 @@ async function bootstrap() {
       'https://web.ablo.ai',
       'https://www.ablo.ai',
       'https://ablo.ai',
-      'https://dashboard.ablo.ai',
-      'https://staging-dashboard.ablo.ai',
     ],
   });
 

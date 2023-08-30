@@ -41,26 +41,4 @@ describe('UserController', () => {
       expect(profile3.body.firstName).toBe(user3.firstName);
     });
   });
-
-  describe('getAllUsers()', () => {
-    it('should return all users for a Client', async () => {
-      const client = await testUtils.createClient();
-      await testUtils.createDashboardUser({
-        email: `user1@${client.domain}`,
-      });
-      await testUtils.createDashboardUser({
-        email: `user2@${client.domain}`,
-      });
-      await testUtils.createDashboardUser({
-        email: `user3@${client.domain}`,
-      });
-
-      const res = await request(server)
-        .get('/users')
-        .set(TestUtils.X_API_KEY, client.apiKey.key)
-        .expect(200);
-
-      expect(res.body.length).toBe(4);
-    });
-  });
 });

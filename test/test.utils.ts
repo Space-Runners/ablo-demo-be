@@ -150,19 +150,6 @@ export class TestUtils {
     return superuser;
   }
 
-  async createDashboardUser(options?: ICreateUserOptions): Promise<User> {
-    const user = await this.userService.createDashboardUser(
-      {
-        email: options?.email || faker.internet.email(),
-        password: options?.password || faker.internet.password(),
-        name: faker.person.fullName(),
-      },
-      this.userRole,
-    );
-
-    return user;
-  }
-
   async createDemoUser(options?: ICreateUserOptions): Promise<User> {
     const user = await this.userService.createDemoUser(
       {

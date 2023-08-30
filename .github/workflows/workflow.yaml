@@ -63,7 +63,6 @@ jobs:
           - 5432:5432
 
     env:
-      CLIENT_DASHBOARD_URL: https://dashboard.ablo.ai
       DATABASE_URL_TEST: postgres://postgres:postgres@localhost:5432/postgres
       JWT_EXPIRATION_TIME: 1w
       JWT_SECRET: 619fd97c-9d88-4a5f-a23c-431ba28aba3d

@@ -1,7 +1,6 @@
 import { faker } from '@faker-js/faker';
 import * as request from 'supertest';
 import { TestUtils } from '../../test';
-import { DashboardUserDto } from '../user/dashboard-user.dto';
 import { AuthService } from './auth.service';
 
 describe('AuthController', () => {
@@ -78,59 +77,6 @@ describe('AuthController', () => {
     });
   });
 
-  describe('registerDashboard()', () => {
-    it('should return unauthorized for mismatched domain', async () => {
-      const userDto: DashboardUserDto = {
-        email: faker.internet.email(),
-        name: faker.person.fullName(),
-        password: faker.internet.password(),
-      };
-
-      await request(server)
-        .post('/auth/register-dashboard')
-        .send(userDto)
-        .expect(401);
-    });
-
-    it('should return user', async () => {
-      const client = await testUtils.createClient();
-      const userDto: DashboardUserDto = {
-        email: faker.person.firstName() + '@' + client.domain,
-        name: faker.person.fullName(),
-        password: faker.internet.password(),
-      };
-
-      await request(server)
-        .post('/auth/register-dashboard')
-        .send(userDto)
-        .expect(201);
-    });
-  });
-
-  describe('googleAuthDashboard()', () => {
-    it('should return access token', async () => {
-      const user = await testUtils.createDemoUser();
-      jest.spyOn(authService, 'googleLogin').mockResolvedValue({
-        iss: 'accounts.google.com',
-        aud: '123',
-        exp: 123,
-        iat: 123,
-        sub: faker.string.uuid(),
-        email: user.email,
-        given_name: user.firstName,
-        family_name: user.lastName,
-      });
-
-      const res = await request(server)
-        .post('/auth/google/login-dashboard')
-        .send({ token: '123' })
-        .expect(201);
-
-      expect(res.body.access_token).toBeDefined();
-      expect(res.body.user).toBeDefined();
-    });
-  });
-
   describe('POST /auth/forgot-password', () => {
     it('should return 201', async () => {
       const user = await testUtils.createDemoUser();
@@ -154,37 +100,6 @@ describe('AuthController', () => {
     it('should return 400 if email is invalid', async () => {
       await request(server)
         .post('/auth/forgot-password')
-        .send({ email: 'invalid' })
-        .expect(400);
-    });
-  });
-
-  describe('POST /auth/forgot-password-dashboard', () => {
-    it('should return 201', async () => {
-      const user = await testUtils.createDemoUser();
-      await request(server)
-        .post('/auth/forgot-password-dashboard')
-        .send({ email: user.email })
-        .expect(201);
-    });
-
-    it('should return 201 even if user does not exist', async () => {
-      await request(server)
-        .post('/auth/forgot-password-dashboard')
-        .send({ email: faker.internet.email() })
-        .expect(201);
-    });
-
-    it('should return 400 if email is not provided', async () => {
-      await request(server)
-        .post('/auth/forgot-password-dashboard')
-        .send({})
-        .expect(400);
-    });
-
-    it('should return 400 if email is invalid', async () => {
-      await request(server)
-        .post('/auth/forgot-password-dashboard')
         .send({ email: 'invalid' })
         .expect(400);
     });
