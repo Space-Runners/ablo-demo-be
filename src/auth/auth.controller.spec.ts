@@ -90,8 +90,6 @@ describe('AuthController', () => {
         password: faker.internet.password(),
       };
 
-      console.log({ user });
-
       const res = await request(server)
         .post('/auth/register')
         .send(user)
