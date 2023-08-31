@@ -18,6 +18,7 @@ import { MailService } from '../mail/mail.service';
 import { EmailTemplate } from '../mail/templates.enum';
 import { ResetPasswordDto } from './reset-password.dto';
 import { LoginResponseDto } from './login-response.dto';
+import { Equal } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -45,6 +46,15 @@ export class AuthService {
 
     if (!user) {
       return;
+    }
+
+    // Check for existing token
+    const existingToken = await ResetToken.findOne({
+      where: { user: Equal(user.id) },
+    });
+
+    if (existingToken) {
+      await existingToken.remove();
     }
 
     const resetToken = new ResetToken();
