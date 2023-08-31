@@ -9,6 +9,7 @@ import { RoleName } from '../auth/role-name.enum';
 import { Role } from './role.entity';
 import { ConfigService } from '@nestjs/config';
 import { Client } from '../clients/client.entity';
+import { verify } from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -42,15 +43,19 @@ export class UserService {
     return user;
   }
 
-  async sendVerificationEmail(user: User, url: string) {
-    const buff = new Buffer(user.email);
+  static createVerifyEmailUrl(email: string, url: string): string {
+    const buff = new Buffer(email);
     const base64data = buff.toString('base64');
     const verifyEmailUrl = `${url}/verify-email?token=${base64data}`;
 
+    return verifyEmailUrl;
+  }
+
+  async sendVerificationEmail(user: User, url: string) {
     await this.sendgridService.sendVerificationEmail(
       user.email,
       user.firstName,
-      verifyEmailUrl,
+      UserService.createVerifyEmailUrl(user.email, url),
     );
   }
 
