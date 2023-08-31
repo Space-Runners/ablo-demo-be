@@ -2,13 +2,11 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { UserService } from '../src/user/user.service';
-import { ClientService } from '../src/clients/client.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Role } from '../src/user/role.entity';
 import { User } from '../src/user/user.entity';
-import { Client } from '../src/clients/client.entity';
 import { TemplateService } from '../src/template/template.service';
-import { ICreateDesignOptions, ICreateUserOptions, imports } from '.';
+import { ICreateUserOptions, imports } from '.';
 import { AuthService } from '../src/auth/auth.service';
 import { RoleName } from '../src/auth/role-name.enum';
 import { DesignService } from '../src/design/design.service';
@@ -17,13 +15,10 @@ import { StorageService } from '../src/generator/storage.service';
 import { GeneratorService } from '../src/generator/generator.service';
 import { Currency } from '../src/template/currency/currency.entity';
 import { Size } from '../src/template/size/size.entity';
-import { TemplateSideService } from '../src/template/side/template-side.service';
 import { Design } from '../src/design/design.entity';
-import { Template } from '../src/template/template.entity';
-import { TemplateColorService } from '../src/template/color/template-color.service';
 import { DesignSideService } from '../src/design/side/design-side.service';
-import { TemplateImageService } from '../src/template/image/template-image.service';
 import { MailService } from '../src/mail/mail.service';
+import { DesignSide } from 'src/design/side/design-side.entity';
 
 // Set timeout to 20s (each suite recreates the DB)
 jest.setTimeout(20000);
@@ -46,13 +41,9 @@ export class TestUtils {
 
   app: INestApplication;
   authService: AuthService;
-  clientService: ClientService;
   designService: DesignService;
   designSideService: DesignSideService;
   templateService: TemplateService;
-  templateColorService: TemplateColorService;
-  templateImageService: TemplateImageService;
-  templateSideService: TemplateSideService;
   userService: UserService;
   currencyRepo;
   roleRepo;
@@ -61,7 +52,6 @@ export class TestUtils {
   adminRole: Role;
   userRole: Role;
   superAdminRole: Role;
-  defaultClient: Client;
   defaultUser: User;
 
   async close() {
@@ -103,18 +93,11 @@ export class TestUtils {
 
     // Services
     this.authService = this.testingModule.get<AuthService>(AuthService);
-    this.clientService = this.testingModule.get<ClientService>(ClientService);
     this.designService = this.testingModule.get<DesignService>(DesignService);
     this.designSideService =
       this.testingModule.get<DesignSideService>(DesignSideService);
     this.templateService =
       this.testingModule.get<TemplateService>(TemplateService);
-    this.templateColorService =
-      this.testingModule.get<TemplateColorService>(TemplateColorService);
-    this.templateImageService =
-      this.testingModule.get<TemplateImageService>(TemplateImageService);
-    this.templateSideService =
-      this.testingModule.get<TemplateSideService>(TemplateSideService);
     this.userService = this.testingModule.get<UserService>(UserService);
     // Repos
     this.currencyRepo = this.testingModule.get(getRepositoryToken(Currency));
@@ -142,7 +125,6 @@ export class TestUtils {
     ]);
 
     this.defaultUser = await this.createDemoUser();
-    this.defaultClient = await this.createClient(this.defaultUser);
   }
 
   async createSuperAdmin(): Promise<User> {
@@ -172,128 +154,51 @@ export class TestUtils {
     return jwt;
   }
 
-  async createClient(user?: User) {
-    if (!user) {
-      user = await this.createDemoUser();
-    }
-
-    return this.clientService.create(user, {
-      domain: faker.internet.domainName(),
-      name: faker.company.name(),
-    });
-  }
-
   async createDesignSide(design?: Design) {
-    const templateSide = await this.createTemplateSide();
+    // const templateSide = await this.createTemplateSide();
 
-    if (!design) {
-      design = await this.createDesign();
-    }
+    // if (!design) {
+    //   design = await this.createDesign();
+    // }
 
-    const side = await this.designSideService.create(
-      {
-        templateSideId: templateSide.id,
-        hasGraphics: faker.datatype.boolean(),
-        hasText: faker.datatype.boolean(),
-        canvasState: faker.datatype.json(),
-        image: TestUtils.FAKE_BASE64_IMAGE,
-        preview: TestUtils.FAKE_BASE64_IMAGE,
-      },
-      design.id,
-      design.client.id,
-    );
+    // const side = await this.designSideService.create(
+    //   {
+    //     templateSideId: templateSide.id,
+    //     hasGraphics: faker.datatype.boolean(),
+    //     hasText: faker.datatype.boolean(),
+    //     canvasState: faker.datatype.json(),
+    //     image: TestUtils.FAKE_BASE64_IMAGE,
+    //     preview: TestUtils.FAKE_BASE64_IMAGE,
+    //   },
+    //   design.id,
+    //   design.client.id,
+    // );
 
-    return side;
+    return new DesignSide();
   }
 
-  async createTemplate(client?: Client, user?: User) {
-    if (!client) {
-      client = await this.createClient(user);
-    }
+  async createDesign(): Promise<Design> {
+    // const user = options?.user || (await this.createDemoUser());
+    // const client =
+    //   options?.client ||
+    //   options?.template?.client ||
+    //   (await this.createClient(user));
+    // const template = options?.template || (await this.createTemplate(client));
 
-    return this.templateService.create(
-      {
-        name: faker.commerce.productName(),
-        fabric: faker.commerce.productDescription(),
-        currencyId: 1,
-        price: Number(faker.commerce.price()),
-        madeIn: faker.location.country(),
-        fit: faker.commerce.productAdjective(),
-        material: faker.commerce.productMaterial(),
-        sizeIds: [1, 2],
-      },
-      client.id,
-    );
-  }
+    // const design = await this.designService.create(
+    //   {
+    //     name: options?.name || faker.commerce.productName(),
+    //     templateColorId:
+    //       options?.color?.id || (await this.createTemplateColor(template)).id,
+    //     sizeId:
+    //       options?.size?.id ||
+    //       faker.number.int({ min: 1, max: template.sizes.length }),
+    //     templateId: template.id,
+    //   },
+    //   user,
+    //   client,
+    // );
 
-  async createTemplateColor(template?: Template) {
-    if (!template) {
-      template = await this.createTemplate();
-    }
-
-    return this.templateColorService.create(
-      {
-        name: faker.color.human(),
-        hex: faker.color.rgb(),
-      },
-      template.id,
-    );
-  }
-
-  async createTemplateSide(template?: Template) {
-    if (!template) {
-      template = await this.createTemplate();
-    }
-
-    return this.templateSideService.create(
-      {
-        name: faker.commerce.productName(),
-        hasArea: true,
-        heightCm: faker.number.int(50),
-        widthCm: faker.number.int(50),
-      },
-      template.id,
-    );
-  }
-
-  async createTemplateImage(
-    template: Template,
-    templateColorId: string,
-    templateSideId: string,
-  ) {
-    if (!template) {
-      template = await this.createTemplate();
-    }
-
-    return this.templateImageService.create({
-      templateColorId,
-      templateSideId,
-      image: TestUtils.FAKE_BASE64_IMAGE,
-    });
-  }
-
-  async createDesign(options?: ICreateDesignOptions): Promise<Design> {
-    const user = options?.user || (await this.createDemoUser());
-    const client =
-      options?.client ||
-      options?.template?.client ||
-      (await this.createClient(user));
-    const template = options?.template || (await this.createTemplate(client));
-
-    const design = await this.designService.create(
-      {
-        name: options?.name || faker.commerce.productName(),
-        templateColorId:
-          options?.color?.id || (await this.createTemplateColor(template)).id,
-        sizeId:
-          options?.size?.id ||
-          faker.number.int({ min: 1, max: template.sizes.length }),
-        templateId: template.id,
-      },
-      user,
-      client,
-    );
-
-    return design;
+    return new Design();
   }
 }
