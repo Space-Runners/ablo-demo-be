@@ -16,14 +16,8 @@ import { diskStorage } from 'multer';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TextToImageDto } from './text-to-image.dto';
 import { StorageService } from './storage.service';
-import { ImageService } from './image.service';
 import { GenerateImageDto } from './generate-image.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
-import { RoleName } from '../auth/role-name.enum';
-import { Roles } from '../auth/role.decorator';
-import { ClientGuard } from '../clients/client.guard';
-import { Image } from './image.entity';
-import { AuthService } from '../auth/auth.service';
 
 @Controller()
 @ApiTags('Generator')
@@ -31,7 +25,6 @@ export class GeneratorController {
   constructor(
     private readonly generatorService: GeneratorService,
     private readonly uploaderService: StorageService,
-    private readonly photosService: ImageService,
   ) {}
 
   @ApiOperation({ summary: 'Remove background from the image' })
@@ -39,7 +32,7 @@ export class GeneratorController {
     status: 201,
   })
   @Post('/generate/remove-background')
-  @UseGuards(ClientGuard)
+  @UseGuards(JwtAuthGuard)
   async removeBackground(@Request() req, @Body('imageUrl') imageUrl: string) {
     const image = await this.generatorService.removeBackground(imageUrl);
 
@@ -83,32 +76,32 @@ export class GeneratorController {
     status: 201,
   })
   @Post('/generate/image')
-  @UseGuards(ClientGuard)
+  @UseGuards(JwtAuthGuard)
   async generateImage(
     @Request() req,
     @Body() generateImage: GenerateImageDto,
   ): Promise<{ images: string[] }> {
     const response = await this.generatorService.generateImage(generateImage);
 
-    const images = [],
-      photos: Image[] = [];
+    const images = [];
+    //   photos: Image[] = [];
 
-    for (const image of response.artifacts) {
-      const url = await this.uploaderService.uploadFile(
-        Buffer.from(image.base64, 'base64'),
-        `${Date.now()}.png`,
-        req.client.id,
-      );
-      images.push(url);
+    // for (const image of response.artifacts) {
+    //   const url = await this.uploaderService.uploadFile(
+    //     Buffer.from(image.base64, 'base64'),
+    //     `${Date.now()}.png`,
+    //     req.client.id,
+    //   );
+    //   images.push(url);
 
-      const photo = new Image();
-      photo.client = req.client;
-      photo.url = url;
-      photo.temporary = req.user?.email === AuthService.GUEST_EMAIL;
-      photos.push(photo);
-    }
+    //   const photo = new Image();
+    //   photo.client = req.client;
+    //   photo.url = url;
+    //   photo.temporary = req.user?.email === AuthService.GUEST_EMAIL;
+    //   photos.push(photo);
+    // }
 
-    await this.photosService.bulkCreate(photos);
+    // await this.photosService.bulkCreate(photos);
 
     return {
       images,
@@ -122,7 +115,7 @@ export class GeneratorController {
     status: 201,
   })
   @Post('/generate/text-to-image')
-  @UseGuards(ClientGuard)
+  @UseGuards(JwtAuthGuard)
   async generateTextToImage(
     @Body() textToImage: TextToImageDto,
     @Request() req,
@@ -131,25 +124,25 @@ export class GeneratorController {
       textToImage,
     );
 
-    const images = [],
-      photos: Image[] = [];
+    const images = [];
+    //   photos: Image[] = [];
 
-    for (const image of response.artifacts) {
-      const result = await this.uploaderService.uploadFile(
-        Buffer.from(image.base64, 'base64'),
-        `${Date.now()}.png`,
-        req.client.id,
-      );
-      images.push(result);
+    // for (const image of response.artifacts) {
+    //   const result = await this.uploaderService.uploadFile(
+    //     Buffer.from(image.base64, 'base64'),
+    //     `${Date.now()}.png`,
+    //     req.client.id,
+    //   );
+    //   images.push(result);
 
-      const photo = new Image();
-      photo.client = req.client;
-      photo.url = result;
+    //   const photo = new Image();
+    //   photo.client = req.client;
+    //   photo.url = result;
 
-      photos.push(photo);
-    }
+    //   photos.push(photo);
+    // }
 
-    await this.photosService.bulkCreate(photos);
+    // await this.photosService.bulkCreate(photos);
 
     return {
       images,
@@ -160,7 +153,7 @@ export class GeneratorController {
     summary: 'Generate a new set of images based off a supplied image',
   })
   @Post('/generate/image-to-image')
-  @UseGuards(ClientGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
@@ -187,25 +180,25 @@ export class GeneratorController {
       image.filename,
     );
 
-    const images = [],
-      photos: Image[] = [];
+    const images = [];
+    //   photos: Image[] = [];
 
-    for (const image of response.artifacts) {
-      const result = await this.uploaderService.uploadFile(
-        Buffer.from(image.base64, 'base64'),
-        `${Date.now()}.png`,
-        req.client.id,
-      );
-      images.push(result);
+    // for (const image of response.artifacts) {
+    //   const result = await this.uploaderService.uploadFile(
+    //     Buffer.from(image.base64, 'base64'),
+    //     `${Date.now()}.png`,
+    //     req.client.id,
+    //   );
+    //   images.push(result);
 
-      const photo = new Image();
-      photo.client = req.client;
-      photo.url = result;
+    //   const photo = new Image();
+    //   photo.client = req.client;
+    //   photo.url = result;
 
-      photos.push(photo);
-    }
+    //   photos.push(photo);
+    // }
 
-    await this.photosService.bulkCreate(photos);
+    // await this.photosService.bulkCreate(photos);
 
     return {
       images,
@@ -216,7 +209,7 @@ export class GeneratorController {
     summary: 'Upscale an image',
   })
   @Post('/generate/image-to-upscale')
-  @UseGuards(ClientGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
@@ -240,25 +233,25 @@ export class GeneratorController {
     image?: Express.Multer.File,
   ): Promise<{ images: string[] }> {
     const response = await this.generatorService.upscaleImage(image.filename);
-    const images = [],
-      photos: Image[] = [];
+    const images = [];
+    //   photos: Image[] = [];
 
-    for (const image of response.artifacts) {
-      const result = await this.uploaderService.uploadFile(
-        Buffer.from(image.base64, 'base64'),
-        `${Date.now()}.png`,
-        req.client.id,
-      );
-      images.push(result);
+    // for (const image of response.artifacts) {
+    //   const result = await this.uploaderService.uploadFile(
+    //     Buffer.from(image.base64, 'base64'),
+    //     `${Date.now()}.png`,
+    //     req.client.id,
+    //   );
+    //   images.push(result);
 
-      const photo = new Image();
-      photo.client = req.client;
-      photo.url = result;
+    //   const photo = new Image();
+    //   photo.client = req.client;
+    //   photo.url = result;
 
-      photos.push(photo);
-    }
+    //   photos.push(photo);
+    // }
 
-    await this.photosService.bulkCreate(photos);
+    // await this.photosService.bulkCreate(photos);
 
     return {
       images,

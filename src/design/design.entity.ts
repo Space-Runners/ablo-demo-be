@@ -1,4 +1,3 @@
-import { Client } from '../clients/client.entity';
 import { User } from '../user/user.entity';
 import {
   Entity,
@@ -32,12 +31,6 @@ export class Design {
 
   @UpdateDateColumn()
   updatedAt: string;
-
-  @Column()
-  clientId: string;
-
-  @ManyToOne(() => Client, (client) => client.designs, { nullable: false })
-  client: Client;
 
   @Column({ nullable: true })
   userId: string;

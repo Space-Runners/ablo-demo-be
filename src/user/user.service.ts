@@ -8,7 +8,6 @@ import { MailService } from '../mail/mail.service';
 import { RoleName } from '../auth/role-name.enum';
 import { Role } from './role.entity';
 import { ConfigService } from '@nestjs/config';
-import { Client } from '../clients/client.entity';
 
 @Injectable()
 export class UserService {
@@ -71,14 +70,6 @@ export class UserService {
 
     await this.sendgridService.sendWelcomeEmail(user.email, user.firstName);
     return user;
-  }
-
-  async findAllByClient(client: Client): Promise<User[]> {
-    return this.repo.find({
-      where: { client: Equal(client.id) },
-      relations: ['roles', 'client'],
-      order: { email: 'ASC' },
-    });
   }
 
   async findOneByEmail(email: string): Promise<User> {

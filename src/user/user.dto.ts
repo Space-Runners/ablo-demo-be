@@ -1,5 +1,3 @@
-import { Client } from '../clients/client.entity';
-
 export class UserDto {
   id: string;
   firstName?: string;
@@ -9,6 +7,5 @@ export class UserDto {
   isActive?: boolean;
   createdAt?: Date;
   roles: string[];
-  client?: Client;
   socialLogin?: string;
 }

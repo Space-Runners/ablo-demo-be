@@ -13,7 +13,6 @@ import {
 import { Role } from './role.entity';
 import { Template } from '../template/template.entity';
 import { Design } from '../design/design.entity';
-import { Client } from '../clients/client.entity';
 import { ResetToken } from './reset-token.entity';
 
 @Entity('user')
@@ -68,9 +67,6 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Design, (design) => design.user)
   designs: Design[];
-
-  @ManyToOne(() => Client, (client) => client.users, { onDelete: 'CASCADE' })
-  client: Client;
 
   @OneToOne(() => ResetToken, (resetToken) => resetToken.user)
   resetToken: ResetToken;

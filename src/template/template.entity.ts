@@ -1,4 +1,3 @@
-import { Client } from '../clients/client.entity';
 import { User } from '../user/user.entity';
 import {
   Entity,
@@ -76,12 +75,6 @@ export class Template {
   @ManyToMany(() => Size)
   @JoinTable()
   sizes: Size[];
-
-  @Column()
-  clientId: string;
-
-  @ManyToOne(() => Client, (client) => client.designs, { nullable: false })
-  client: Client;
 
   @Column({
     nullable: true,
