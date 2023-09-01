@@ -134,6 +134,16 @@ describe('AuthController', () => {
         .send({ email: 'invalid' })
         .expect(400);
     });
+
+    it('should return 201 even if existing ResetToken', async () => {
+      const user = await testUtils.createDemoUser();
+      await authService.forgotPassword(user.email);
+
+      await request(server)
+        .post('/auth/forgot-password')
+        .send({ email: user.email })
+        .expect(201);
+    });
   });
 
   describe('POST /auth/reset-password', () => {
