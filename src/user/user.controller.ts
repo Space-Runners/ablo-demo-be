@@ -1,21 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { DemoUserDto } from './demo-user.dto';
-import { Roles } from '../auth/role.decorator';
-import { RoleName } from '../auth/role-name.enum';
 import { MailService } from '../mail/mail.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt.guard';
-import { ClientGuard } from '../clients/client.guard';
-import { User } from './user.entity';
 
 @Controller()
 @ApiTags('Users')
@@ -24,13 +11,6 @@ export class UserController {
     private readonly service: UserService,
     private mailService: MailService,
   ) {}
-
-  @ApiOperation({ summary: 'Get all users belonging to a Client' })
-  @UseGuards(ClientGuard)
-  @Get('/users')
-  async getAllUsers(@Request() req): Promise<User[]> {
-    return this.service.findAllByClient(req.client);
-  }
 
   @ApiOperation({ summary: 'Verify email with token' })
   @Get('/users/verify-email/:token')

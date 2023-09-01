@@ -8,7 +8,6 @@ import { MailService } from '../mail/mail.service';
 import { RoleName } from '../auth/role-name.enum';
 import { Role } from './role.entity';
 import { ConfigService } from '@nestjs/config';
-import { Client } from '../clients/client.entity';
 import { verify } from 'crypto';
 
 @Injectable()
@@ -78,18 +77,10 @@ export class UserService {
     return user;
   }
 
-  async findAllByClient(client: Client): Promise<User[]> {
-    return this.repo.find({
-      where: { client: Equal(client.id) },
-      relations: ['roles', 'client'],
-      order: { email: 'ASC' },
-    });
-  }
-
   async findOneByEmail(email: string): Promise<User> {
     const user = await this.repo.findOne({
       where: { email: Equal(email) },
-      relations: ['roles', 'client'],
+      relations: ['roles'],
     });
 
     return user;
