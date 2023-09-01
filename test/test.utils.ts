@@ -5,20 +5,12 @@ import { UserService } from '../src/user/user.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Role } from '../src/user/role.entity';
 import { User } from '../src/user/user.entity';
-import { TemplateService } from '../src/template/template.service';
 import { ICreateUserOptions, imports } from '.';
 import { AuthService } from '../src/auth/auth.service';
 import { RoleName } from '../src/auth/role-name.enum';
 import { DesignService } from '../src/design/design.service';
 import { JwtAuthGuard } from '../src/auth/jwt.guard';
-import { StorageService } from '../src/storage.service';
-import { GeneratorService } from '../src/generator/generator.service';
-import { Currency } from '../src/template/currency/currency.entity';
-import { Size } from '../src/template/size/size.entity';
-import { Design } from '../src/design/design.entity';
-import { DesignSideService } from '../src/design/side/design-side.service';
 import { MailService } from '../src/mail/mail.service';
-import { DesignSide } from 'src/design/side/design-side.entity';
 
 // Set timeout to 20s (each suite recreates the DB)
 jest.setTimeout(20000);
@@ -42,12 +34,8 @@ export class TestUtils {
   app: INestApplication;
   authService: AuthService;
   designService: DesignService;
-  designSideService: DesignSideService;
-  templateService: TemplateService;
   userService: UserService;
-  currencyRepo;
   roleRepo;
-  sizeRepo;
 
   adminRole: Role;
   userRole: Role;
@@ -59,23 +47,9 @@ export class TestUtils {
   }
 
   async init() {
-    const generatorServiceMock = {
-      removeBackground: jest.fn(
-        () =>
-          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/9AtyRoAAAAASUVORK5CYII=',
-      ),
-    };
-
     const mailServiceMock = {
       sendVerificationEmail: jest.fn(),
       send: jest.fn(),
-    };
-
-    const storageServiceMock = {
-      uploadFile: () => faker.internet.url(),
-      downloadFile: () => TestUtils.FAKE_BASE64_IMAGE,
-      removeFile: () => jest.fn(),
-      removeFolder: () => jest.fn(),
     };
 
     this.testingModule = await Test.createTestingModule({
@@ -83,26 +57,16 @@ export class TestUtils {
     })
       .overrideGuard(JwtAuthGuard)
       .useClass(JwtAuthGuard)
-      .overrideProvider(GeneratorService)
-      .useValue(generatorServiceMock)
       .overrideProvider(MailService)
       .useValue(mailServiceMock)
-      .overrideProvider(StorageService)
-      .useValue(storageServiceMock)
       .compile();
 
     // Services
     this.authService = this.testingModule.get<AuthService>(AuthService);
     this.designService = this.testingModule.get<DesignService>(DesignService);
-    this.designSideService =
-      this.testingModule.get<DesignSideService>(DesignSideService);
-    this.templateService =
-      this.testingModule.get<TemplateService>(TemplateService);
     this.userService = this.testingModule.get<UserService>(UserService);
     // Repos
-    this.currencyRepo = this.testingModule.get(getRepositoryToken(Currency));
     this.roleRepo = this.testingModule.get(getRepositoryToken(Role));
-    this.sizeRepo = this.testingModule.get(getRepositoryToken(Size));
 
     this.app = this.testingModule.createNestApplication();
     await this.app.init();
@@ -113,17 +77,6 @@ export class TestUtils {
     this.superAdminRole = await this.roleRepo.save({
       name: RoleName.SuperAdmin,
     });
-    await this.currencyRepo.save([{ name: 'USD' }, { name: 'EUR' }]);
-    await this.sizeRepo.save([
-      { name: 'XXS' },
-      { name: 'XS' },
-      { name: 'S' },
-      { name: 'M' },
-      { name: 'L' },
-      { name: 'XL' },
-      { name: 'XXL' },
-    ]);
-
     this.defaultUser = await this.createDemoUser();
   }
 
@@ -152,53 +105,5 @@ export class TestUtils {
       roles: user.roles.map((r) => r.name),
     });
     return jwt;
-  }
-
-  async createDesignSide(design?: Design) {
-    // const templateSide = await this.createTemplateSide();
-
-    // if (!design) {
-    //   design = await this.createDesign();
-    // }
-
-    // const side = await this.designSideService.create(
-    //   {
-    //     templateSideId: templateSide.id,
-    //     hasGraphics: faker.datatype.boolean(),
-    //     hasText: faker.datatype.boolean(),
-    //     canvasState: faker.datatype.json(),
-    //     image: TestUtils.FAKE_BASE64_IMAGE,
-    //     preview: TestUtils.FAKE_BASE64_IMAGE,
-    //   },
-    //   design.id,
-    //   design.client.id,
-    // );
-
-    return new DesignSide();
-  }
-
-  async createDesign(): Promise<Design> {
-    // const user = options?.user || (await this.createDemoUser());
-    // const client =
-    //   options?.client ||
-    //   options?.template?.client ||
-    //   (await this.createClient(user));
-    // const template = options?.template || (await this.createTemplate(client));
-
-    // const design = await this.designService.create(
-    //   {
-    //     name: options?.name || faker.commerce.productName(),
-    //     templateColorId:
-    //       options?.color?.id || (await this.createTemplateColor(template)).id,
-    //     sizeId:
-    //       options?.size?.id ||
-    //       faker.number.int({ min: 1, max: template.sizes.length }),
-    //     templateId: template.id,
-    //   },
-    //   user,
-    //   client,
-    // );
-
-    return new Design();
   }
 }
