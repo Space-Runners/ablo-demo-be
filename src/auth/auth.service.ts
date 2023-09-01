@@ -56,7 +56,7 @@ export class AuthService {
     await resetToken.save();
 
     // Send email
-    const resetUrl = `${url}/reset-password/${resetToken.token}`;
+    const resetUrl = `${url}/reset-password?token=${resetToken.token}`;
 
     await this.mailService.send(email, EmailTemplate.GENERIC, {
       subject: 'Reset your Ablo password',
