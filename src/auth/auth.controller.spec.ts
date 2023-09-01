@@ -2,16 +2,20 @@ import { faker } from '@faker-js/faker';
 import * as request from 'supertest';
 import { TestUtils } from '../../test';
 import { AuthService } from './auth.service';
+import { MailService } from '../mail/mail.service';
+import { UserService } from '../user/user.service';
 
 describe('AuthController', () => {
   let testUtils: TestUtils;
   let server;
   let authService: AuthService;
+  let mailService: MailService;
 
   beforeAll(async () => {
     testUtils = await TestUtils.getInstance();
     server = testUtils.app.getHttpServer();
     authService = testUtils.app.get(AuthService);
+    mailService = testUtils.app.get(MailService);
   });
 
   afterAll(async () => {
@@ -75,6 +79,33 @@ describe('AuthController', () => {
       expect(res.body.user.firstName).toEqual(user.firstName);
       expect(res.body.user.lastName).toEqual(user.lastName);
     });
+
+    it('should send verification email', async () => {
+      const spy = jest.spyOn(mailService, 'sendVerificationEmail');
+
+      const user = {
+        email: faker.internet.email(),
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
+        password: faker.internet.password(),
+      };
+
+      const res = await request(server)
+        .post('/auth/register')
+        .send(user)
+        .expect(201);
+
+      expect(res.body.user.id).toBeDefined();
+      expect(res.body.user.email).toEqual(user.email);
+      expect(res.body.user.firstName).toEqual(user.firstName);
+      expect(res.body.user.lastName).toEqual(user.lastName);
+
+      expect(spy).toHaveBeenLastCalledWith(
+        user.email,
+        user.firstName,
+        UserService.createVerifyEmailUrl(user.email, process.env.DEMO_URL),
+      );
+    });
   });
 
   describe('POST /auth/forgot-password', () => {
@@ -102,6 +133,16 @@ describe('AuthController', () => {
         .post('/auth/forgot-password')
         .send({ email: 'invalid' })
         .expect(400);
+    });
+
+    it('should return 201 even if existing ResetToken', async () => {
+      const user = await testUtils.createDemoUser();
+      await authService.forgotPassword(user.email);
+
+      await request(server)
+        .post('/auth/forgot-password')
+        .send({ email: user.email })
+        .expect(201);
     });
   });
 

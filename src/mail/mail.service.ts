@@ -12,15 +12,20 @@ export class MailService {
   }
 
   async sendVerificationEmail(email: string, firstName: string, url: string) {
-    await this.send(email, EmailTemplate.VERIFICATION, {
-      first_name: firstName,
-      url,
+    await this.send(email, EmailTemplate.GENERIC, {
+      subject: 'Verify your Ablo email address',
+      title: `Hey ${firstName}, please verify your Ablo email address`,
+      buttonText: 'Verify email address',
+      buttonUrl: url,
     });
   }
 
   async sendWelcomeEmail(email: string, firstName: string) {
-    await this.send(email, EmailTemplate.WELCOME, {
-      first_name: firstName,
+    await this.send(email, EmailTemplate.GENERIC, {
+      subject: 'Welcome to Ablo',
+      title: `Hey ${firstName}, welcome to Ablo`,
+      buttonText: 'Start using Ablo',
+      buttonUrl: process.env.CLIENT_DASHBOARD_URL,
     });
   }
 
