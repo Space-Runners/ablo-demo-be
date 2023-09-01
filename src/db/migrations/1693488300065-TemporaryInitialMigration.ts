@@ -1,4 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { Role } from '../../user/role.entity';
+import { User } from '../../user/user.entity';
 
 export class TemporaryInitialMigration1693488300065
   implements MigrationInterface
@@ -235,6 +237,51 @@ export class TemporaryInitialMigration1693488300065
             ALTER TABLE "user_roles_role"
             ADD CONSTRAINT "FK_0e2f5483d5e8d52043f97634538" FOREIGN KEY ("role_id") REFERENCES "role"("id") ON DELETE CASCADE ON UPDATE CASCADE
         `);
+
+    // SEED INITIAL DATA
+    // Default Roles
+    const roles = await queryRunner.manager.save(
+      queryRunner.manager.create<Role>(Role, [
+        { name: 'super_admin' },
+        { name: 'admin' },
+        { name: 'user' },
+      ]),
+    );
+    const superAdminRole = roles.find((r) => r.name === 'super_admin');
+    await queryRunner.manager.save(
+      queryRunner.manager.create<User>(User, [
+        {
+          email: 'devops@spacerunners.com',
+          firstName: 'Devops',
+          lastName: 'Spacerunners',
+          password:
+            '$argon2id$v=19$m=65536,t=3,p=4$z6Bi1PE9D8Cg5kjtXnrNAw$A05qyxde2jlwNf14zguyn3PLhRWCEvYDzIUUS2awMY4',
+          verified: true,
+          isActive: true,
+          roles: [superAdminRole],
+        },
+        {
+          email: 'mihovil@spacerunners.com',
+          firstName: 'Mihovil',
+          lastName: 'Kovacevic',
+          password:
+            '$argon2id$v=19$m=65536,t=3,p=4$BTaY56aBY4bElCF+Dldefw$ZvlnRQoprziGcxcXPxdGhriagULC/pG8zgmiF6dKroE',
+          verified: true,
+          isActive: true,
+          roles: [superAdminRole],
+        },
+        {
+          email: 'karim@spacerunners.com',
+          firstName: 'Karim',
+          lastName: 'Varela',
+          password:
+            '$argon2id$v=19$m=65536,t=3,p=4$oUp97HSiUCcH6lEqTJb/eg$nQ1ldXkybl40aheiUcSetTfFy51Ljx+PJsHqic8w7Hs',
+          verified: true,
+          isActive: true,
+          roles: [superAdminRole],
+        },
+      ]),
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
