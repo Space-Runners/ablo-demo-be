@@ -11,7 +11,7 @@ import { AuthService } from '../src/auth/auth.service';
 import { RoleName } from '../src/auth/role-name.enum';
 import { DesignService } from '../src/design/design.service';
 import { JwtAuthGuard } from '../src/auth/jwt.guard';
-import { StorageService } from '../src/generator/storage.service';
+import { StorageService } from '../src/storage.service';
 import { GeneratorService } from '../src/generator/generator.service';
 import { Currency } from '../src/template/currency/currency.entity';
 import { Size } from '../src/template/size/size.entity';

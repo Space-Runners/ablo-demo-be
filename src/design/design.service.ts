@@ -2,17 +2,13 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, Repository } from 'typeorm';
 import { Design } from './design.entity';
-import { CreateDesignDto } from './create-design.dto';
 import { User } from '../user/user.entity';
-import { TemplateService } from '../template/template.service';
-import { PatchDesignDto } from './patch-design.dto';
 
 @Injectable()
 export class DesignService {
   constructor(
     @InjectRepository(Design)
     private readonly repo: Repository<Design>,
-    private readonly templateService: TemplateService,
   ) {}
 
   public async getUserDesign(id: string, userId: string) {
@@ -23,7 +19,7 @@ export class DesignService {
     return design;
   }
 
-  async patch(design: Design, patchDesignDto: PatchDesignDto) {
+  async patch(design: Design, patchDesignDto: any) {
     // const { name, templateColorId, templateId, sizeId } = patchDesignDto;
     // if (name) {
     //   design.name = name;
@@ -69,7 +65,7 @@ export class DesignService {
     });
   }
 
-  async create(designDto: CreateDesignDto, user: User): Promise<Design> {
+  async create(designDto: any, user: User): Promise<Design> {
     // const template = await this.templateService.findOne(designDto.templateId);
 
     // const { name, templateColorId, sizeId } = designDto;
@@ -94,7 +90,7 @@ export class DesignService {
     return design;
   }
 
-  async update(id: string, design: CreateDesignDto): Promise<void> {
+  async update(id: string, design: any): Promise<void> {
     // const template = await this.templateService.findOne(design.templateId);
     // // TODO: This should be called for design sides I think
     // // design = await this.updateEditorState(design, clientId);

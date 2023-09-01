@@ -11,7 +11,6 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { Role } from './role.entity';
-import { Template } from '../template/template.entity';
 import { Design } from '../design/design.entity';
 import { ResetToken } from './reset-token.entity';
 
@@ -61,9 +60,6 @@ export class User extends BaseEntity {
   @ManyToMany(() => Role)
   @JoinTable()
   roles: Role[];
-
-  @OneToMany(() => Template, (template) => template.user)
-  templates: Template[];
 
   @OneToMany(() => Design, (design) => design.user)
   designs: Design[];

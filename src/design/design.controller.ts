@@ -13,9 +13,7 @@ import {
 import { DesignService } from './design.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Design } from './design.entity';
-import { CreateDesignDto } from './create-design.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
-import { PatchDesignDto } from './patch-design.dto';
 
 @Controller()
 @ApiTags('Design')
@@ -30,7 +28,6 @@ export class DesignController {
   @UseGuards(JwtAuthGuard)
   async getAll(@Request() req): Promise<Design[]> {
     const designs = await this.service.getAllForUser(req.user.id);
-
     return designs;
   }
 
@@ -51,10 +48,7 @@ export class DesignController {
   })
   @Post('/designs')
   @UseGuards(JwtAuthGuard)
-  async create(
-    @Request() req,
-    @Body() design: CreateDesignDto,
-  ): Promise<Design> {
+  async create(@Request() req, @Body() design: any): Promise<Design> {
     return this.service.create(design, req.user);
   }
 
@@ -64,10 +58,7 @@ export class DesignController {
   })
   @Post('/clients/designs')
   @UseGuards(JwtAuthGuard)
-  async clientCreate(
-    @Request() req,
-    @Body() design: CreateDesignDto,
-  ): Promise<Design> {
+  async clientCreate(@Request() req, @Body() design: any): Promise<Design> {
     return this.service.create(design, req.user);
   }
 
@@ -80,7 +71,7 @@ export class DesignController {
   async patch(
     @Param('id') id: string,
     @Request() req,
-    @Body() patchDesignDto: PatchDesignDto,
+    @Body() patchDesignDto: any,
   ): Promise<Design> {
     const design = await this.service.getOne(id);
     await this.service.patch(design, patchDesignDto);
@@ -96,7 +87,7 @@ export class DesignController {
   async put(
     @Param('id') id: string,
     @Request() req,
-    @Body() design: CreateDesignDto,
+    @Body() design: any,
   ): Promise<Design> {
     await this.service.getUserDesign(id, req.user.id);
     await this.service.update(id, design);
