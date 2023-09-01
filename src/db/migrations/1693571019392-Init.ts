@@ -123,6 +123,16 @@ export class Init1693571019392 implements MigrationInterface {
           isActive: true,
           roles: [adminRole],
         },
+        {
+          email: 'bojan@spacerunners.com',
+          firstName: 'Karim',
+          lastName: 'Varela',
+          password:
+            '$argon2id$v=19$m=65536,t=3,p=4$oUp97HSiUCcH6lEqTJb/eg$nQ1ldXkybl40aheiUcSetTfFy51Ljx+PJsHqic8w7Hs',
+          verified: true,
+          isActive: true,
+          roles: [adminRole],
+        },
       ]),
     );
   }

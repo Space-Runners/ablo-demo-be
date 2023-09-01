@@ -6,7 +6,6 @@ import {
   Request,
   Post,
   Param,
-  Put,
   UseGuards,
   Patch,
 } from '@nestjs/common';
@@ -38,28 +37,18 @@ export class DesignController {
   @Get('/designs/:id')
   @UseGuards(JwtAuthGuard)
   async getOne(@Param('id') id: string, @Request() req) {
-    const design = await this.service.getUserDesign(id, req.user.id);
-    return design;
+    await this.service.checkAuth(id, req.user.id);
+    return this.service.getOne(id);
   }
 
-  @ApiOperation({ summary: 'Create a new design as a Demo User' })
+  @ApiOperation({ summary: 'Create a new design' })
   @ApiResponse({
     status: 201,
   })
   @Post('/designs')
   @UseGuards(JwtAuthGuard)
-  async create(@Request() req, @Body() design: any): Promise<Design> {
-    return this.service.create(design, req.user);
-  }
-
-  @ApiOperation({ summary: 'Create a new design as a Client' })
-  @ApiResponse({
-    status: 201,
-  })
-  @Post('/clients/designs')
-  @UseGuards(JwtAuthGuard)
-  async clientCreate(@Request() req, @Body() design: any): Promise<Design> {
-    return this.service.create(design, req.user);
+  async create(@Request() req, @Body() dto: any): Promise<any> {
+    return this.service.create(dto, req.user);
   }
 
   @ApiOperation({ summary: 'Patch design' })
@@ -71,27 +60,10 @@ export class DesignController {
   async patch(
     @Param('id') id: string,
     @Request() req,
-    @Body() patchDesignDto: any,
-  ): Promise<Design> {
-    const design = await this.service.getOne(id);
-    await this.service.patch(design, patchDesignDto);
-    return design;
-  }
-
-  @ApiOperation({ summary: 'Update design' })
-  @ApiResponse({
-    status: 204,
-  })
-  @Put('/designs/:id')
-  @UseGuards(JwtAuthGuard)
-  async put(
-    @Param('id') id: string,
-    @Request() req,
-    @Body() design: any,
-  ): Promise<Design> {
-    await this.service.getUserDesign(id, req.user.id);
-    await this.service.update(id, design);
-    return;
+    @Body() dto: any,
+  ): Promise<any> {
+    await this.service.checkAuth(id, req.user.id);
+    return this.service.patch(id, dto);
   }
 
   @ApiOperation({ summary: 'Delete design' })
@@ -101,7 +73,7 @@ export class DesignController {
   @Delete('/designs/:id')
   @UseGuards(JwtAuthGuard)
   async delete(@Param('id') id: string, @Request() req): Promise<void> {
-    await this.service.getUserDesign(id, req.user.id);
+    await this.service.checkAuth(id, req.user.id);
     return this.service.delete(id);
   }
 }

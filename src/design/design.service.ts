@@ -1,3 +1,4 @@
+import axios, { AxiosInstance } from 'axios';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, Repository } from 'typeorm';
@@ -6,110 +7,67 @@ import { User } from '../user/user.entity';
 
 @Injectable()
 export class DesignService {
+  private axiosInstance: AxiosInstance;
+
   constructor(
     @InjectRepository(Design)
     private readonly repo: Repository<Design>,
-  ) {}
-
-  public async getUserDesign(id: string, userId: string) {
-    const design = await this.getOne(id);
-    if (!design || design.userId !== userId) {
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
-    }
-    return design;
-  }
-
-  async patch(design: Design, patchDesignDto: any) {
-    // const { name, templateColorId, templateId, sizeId } = patchDesignDto;
-    // if (name) {
-    //   design.name = name;
-    // }
-    // if (templateColorId) {
-    //   const templateColor = await this.templateColorService.findOne(
-    //     templateColorId,
-    //   );
-    //   if (!templateColor) {
-    //     throw new HttpException('Color not found', HttpStatus.BAD_REQUEST);
-    //   }
-    //   design.color = templateColor;
-    // }
-    // if (templateId) {
-    //   const template = await this.templateService.findOne(templateId);
-    //   if (!template) {
-    //     throw new HttpException('Template not found', HttpStatus.BAD_REQUEST);
-    //   }
-    //   design.template = template;
-    // }
-    // if (sizeId) {
-    //   const size = design.template.sizes.find((s) => s.id === sizeId);
-    //   if (!size) {
-    //     throw new HttpException('Size not found', HttpStatus.BAD_REQUEST);
-    //   }
-    //   design.size = size;
-    // }
-    // await this.repo.save(design);
-  }
-
-  async getAll() {
-    return this.repo.find();
-  }
-
-  async getAllForUser(userId: string) {
-    return this.repo.findBy({ userId });
-  }
-
-  async getOne(id: string) {
-    return this.repo.findOne({
-      where: { id },
-      relations: ['client', 'template'],
+  ) {
+    this.axiosInstance = axios.create({
+      baseURL: process.env.API_URL,
+      headers: {
+        common: {
+          'X-API-Key': process.env.API_KEY,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      },
     });
   }
 
-  async create(designDto: any, user: User): Promise<Design> {
-    // const template = await this.templateService.findOne(designDto.templateId);
-
-    // const { name, templateColorId, sizeId } = designDto;
-
-    // if (!template.colors || template.colors.length === 0) {
-    //   throw new HttpException('Template has no colors', HttpStatus.BAD_REQUEST);
-    // }
-
-    // const color = template.colors.find((c) => c.id === templateColorId);
-
-    // if (!color) {
-    //   throw new HttpException('Color not found', HttpStatus.BAD_REQUEST);
-    // }
-
-    // const size = template.sizes.find((s) => s.id === sizeId);
-    // if (!size) {
-    //   throw new HttpException('Size not found', HttpStatus.BAD_REQUEST);
-    // }
-
-    const design: Design = await this.repo.save(designDto);
-
-    return design;
+  public async checkAuth(id: string, userId: string) {
+    const design = await this.repo.findOne({
+      where: { id: Equal(id) },
+    });
+    if (!design || design.userId !== userId) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
   }
 
-  async update(id: string, design: any): Promise<void> {
-    // const template = await this.templateService.findOne(design.templateId);
-    // // TODO: This should be called for design sides I think
-    // // design = await this.updateEditorState(design, clientId);
-    // const { name, templateColorId, sizeId } = design;
-    // const color = await this.templateColorService.findOne(templateColorId);
-    // if (!color) {
-    //   throw new HttpException('Color not found', HttpStatus.BAD_REQUEST);
-    // }
-    // const size = template.sizes.find((s) => s.id === sizeId);
-    // if (!size) {
-    //   throw new HttpException('Size not found', HttpStatus.BAD_REQUEST);
-    // }
-    // await this.repo.update(id, {
-    //   name,
-    //   color,
-    // });
+  async getAllForUser(userId: string) {
+    const { data } = await this.axiosInstance.get(`/clients/designs`);
+    const designIds = (await this.repo.findBy({ userId })).map(
+      (design) => design.id,
+    );
+    const designsForUser = data.filter((design) =>
+      designIds.find((id) => id === design.id),
+    );
+    return designsForUser;
+  }
+
+  async getOne(id: string): Promise<any> {
+    const { data } = await this.axiosInstance.get(`/clients/designs/${id}`);
+    return data;
+  }
+
+  async create(dto: any, user: User): Promise<any> {
+    const { data } = await this.axiosInstance.post('/clients/designs', dto);
+    const id = data?.id;
+    const userId = user?.id;
+    await this.repo.save({
+      id,
+      userId,
+    });
+    return data;
+  }
+
+  async patch(id: string, dto: any): Promise<any> {
+    const { data } = await this.axiosInstance.patch(`/designs/${id}`, dto);
+    return data;
   }
 
   async delete(id: string): Promise<any> {
+    await this.axiosInstance.delete(`/clients/designs/${id}`);
     return this.repo.delete({ id });
   }
 }
