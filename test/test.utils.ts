@@ -11,12 +11,13 @@ import { RoleName } from '../src/auth/role-name.enum';
 import { DesignService } from '../src/design/design.service';
 import { JwtAuthGuard } from '../src/auth/jwt.guard';
 import { MailService } from '../src/mail/mail.service';
+import { Design } from '../src/design/design.entity';
+import { Equal } from 'typeorm';
 
 // Set timeout to 20s (each suite recreates the DB)
 jest.setTimeout(20000);
 
 export class TestUtils {
-  static X_API_KEY = 'X-Api-key';
   static FAKE_BASE64_IMAGE =
     'data:image/png;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
   static FAKE_UUID = '27f49f61-7977-4757-b1e4-3190d532e826';
@@ -35,6 +36,7 @@ export class TestUtils {
   authService: AuthService;
   designService: DesignService;
   userService: UserService;
+  designRepo;
   roleRepo;
 
   adminRole: Role;
@@ -51,6 +53,20 @@ export class TestUtils {
       sendVerificationEmail: jest.fn(),
       send: jest.fn(),
     };
+    const designServiceMock = {
+      getAllForUser: async (userId: string) =>
+        await this.designRepo.findBy({ userId }),
+      getOne: async (id: string) =>
+        await this.designRepo.findOne({ where: { id: Equal(id) } }),
+      create: async (dto: any, user: User) =>
+        await this.designRepo.save({
+          id: faker.string.uuid(),
+          userId: user.id,
+        }),
+      patch: () => {},
+      delete: () => async (id: string) => await this.designRepo.delete({ id }),
+      checkAuth: () => true,
+    };
 
     this.testingModule = await Test.createTestingModule({
       imports,
@@ -59,6 +75,8 @@ export class TestUtils {
       .useClass(JwtAuthGuard)
       .overrideProvider(MailService)
       .useValue(mailServiceMock)
+      .overrideProvider(DesignService)
+      .useValue(designServiceMock)
       .compile();
 
     // Services
@@ -66,6 +84,7 @@ export class TestUtils {
     this.designService = this.testingModule.get<DesignService>(DesignService);
     this.userService = this.testingModule.get<UserService>(UserService);
     // Repos
+    this.designRepo = this.testingModule.get(getRepositoryToken(Design));
     this.roleRepo = this.testingModule.get(getRepositoryToken(Role));
 
     this.app = this.testingModule.createNestApplication();
@@ -83,6 +102,13 @@ export class TestUtils {
   async createSuperAdmin(): Promise<User> {
     const superuser = await this.createDemoUser({ role: this.superAdminRole });
     return superuser;
+  }
+
+  async createDesign(user: User): Promise<Design> {
+    return await this.designRepo.save({
+      id: faker.string.uuid(),
+      userId: user.id,
+    });
   }
 
   async createDemoUser(options?: ICreateUserOptions): Promise<User> {
