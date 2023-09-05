@@ -39,7 +39,7 @@ async function bootstrap() {
     createProxyMiddleware({
       target: process.env.API_URL,
       changeOrigin: true,
-      onProxyReq: (proxyReq, req, res) => {
+      onProxyReq: (proxyReq) => {
         proxyReq.setHeader('X-Api-Key', process.env.API_KEY);
       },
     }),

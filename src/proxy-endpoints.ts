@@ -1,6 +1,6 @@
 const proxyEndpoints: string[] = [
   '/currencies',
-  '/designs/*',
+  '/designs/*/sides',
   '/generate/*',
   '/sizes',
   '/templates',
