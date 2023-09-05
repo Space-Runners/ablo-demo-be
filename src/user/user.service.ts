@@ -8,7 +8,6 @@ import { MailService } from '../mail/mail.service';
 import { RoleName } from '../auth/role-name.enum';
 import { Role } from './role.entity';
 import { ConfigService } from '@nestjs/config';
-import { verify } from 'crypto';
 
 @Injectable()
 export class UserService {

@@ -66,8 +66,6 @@ jobs:
       DATABASE_URL_TEST: postgres://postgres:postgres@localhost:5432/postgres
       JWT_EXPIRATION_TIME: 1w
       JWT_SECRET: 619fd97c-9d88-4a5f-a23c-431ba28aba3d
-      AWS_BUCKET_NAME: sr-image-generator
-      AWS_REGION: eu-central-1
       SENDGRID_API_KEY: SG.RjjaxdFyTcmt8yWtdTebDQ.FT_cg-ggbi-1dSSyISRHz_M1fvZ5PW1XDHvfyNiPAw
       SENDGRID_SANDBOX_MODE: true
 
