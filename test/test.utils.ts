@@ -63,7 +63,9 @@ export class TestUtils {
           id: faker.string.uuid(),
           userId: user.id,
         }),
-      patch: () => {},
+      patch: () => {
+        return {};
+      },
       delete: () => async (id: string) => await this.designRepo.delete({ id }),
       checkAuth: () => true,
     };
