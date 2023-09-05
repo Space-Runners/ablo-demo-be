@@ -18,6 +18,7 @@ import { MailService } from '../mail/mail.service';
 import { EmailTemplate } from '../mail/templates.enum';
 import { ResetPasswordDto } from './reset-password.dto';
 import { LoginResponseDto } from './login-response.dto';
+import { Equal } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -47,6 +48,15 @@ export class AuthService {
       return;
     }
 
+    // Check for existing token
+    const existingToken = await ResetToken.findOne({
+      where: { user: Equal(user.id) },
+    });
+
+    if (existingToken) {
+      await existingToken.remove();
+    }
+
     const resetToken = new ResetToken();
     resetToken.user = user;
     resetToken.token = v4();
@@ -56,7 +66,7 @@ export class AuthService {
     await resetToken.save();
 
     // Send email
-    const resetUrl = `${url}/reset-password/${resetToken.token}`;
+    const resetUrl = `${url}/reset-password?token=${resetToken.token}`;
 
     await this.mailService.send(email, EmailTemplate.GENERIC, {
       subject: 'Reset your Ablo password',

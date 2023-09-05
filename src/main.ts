@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json, urlencoded } from 'body-parser';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import proxyEndpoints from './proxy-endpoints';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -28,10 +30,20 @@ async function bootstrap() {
       'https://web.ablo.ai',
       'https://www.ablo.ai',
       'https://ablo.ai',
-      'https://dashboard.ablo.ai',
-      'https://staging-dashboard.ablo.ai',
     ],
   });
+
+  // Proxy API requests to ABLO services
+  app.use(
+    proxyEndpoints,
+    createProxyMiddleware({
+      target: process.env.API_URL,
+      changeOrigin: true,
+      onProxyReq: (proxyReq) => {
+        proxyReq.setHeader('X-Api-Key', process.env.API_KEY);
+      },
+    }),
+  );
 
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ limit: '50mb', extended: true }));
