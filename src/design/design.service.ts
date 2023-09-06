@@ -35,7 +35,7 @@ export class DesignService {
   }
 
   async getAllForUser(userId: string) {
-    const { data } = await this.axiosInstance.get(`/clients/designs`);
+    const { data } = await this.axiosInstance.get(`/designs`);
     const designIds = (await this.repo.findBy({ userId })).map(
       (design) => design.id,
     );
@@ -46,12 +46,12 @@ export class DesignService {
   }
 
   async getOne(id: string): Promise<any> {
-    const { data } = await this.axiosInstance.get(`/clients/designs/${id}`);
+    const { data } = await this.axiosInstance.get(`/designs/${id}`);
     return data;
   }
 
   async create(dto: any, user: User): Promise<any> {
-    const { data } = await this.axiosInstance.post('/clients/designs', dto);
+    const { data } = await this.axiosInstance.post('/designs', dto);
     const id = data?.id;
     const userId = user?.id;
     await this.repo.save({
@@ -67,7 +67,7 @@ export class DesignService {
   }
 
   async delete(id: string): Promise<any> {
-    await this.axiosInstance.delete(`/clients/designs/${id}`);
+    await this.axiosInstance.delete(`/designs/${id}`);
     return this.repo.delete({ id });
   }
 }
