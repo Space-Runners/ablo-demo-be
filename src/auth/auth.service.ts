@@ -111,15 +111,16 @@ export class AuthService {
     const user = await this.userService.findOneByEmail(email);
 
     if (!user) {
-      return null;
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
-    if (
-      !user.socialLogin &&
-      !isFromGoogle &&
-      !(await argon2.verify(user.password, pass))
-    ) {
-      return null;
+    if (user.socialLogin && isFromGoogle) {
+      return user;
+    }
+
+    const isVerified = await argon2.verify(user.password, pass);
+    if (!isVerified) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
     return user;
