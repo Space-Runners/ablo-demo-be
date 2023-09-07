@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserDto as UserDto } from './user.dto';
+import { UserDto } from './user.dto';
 import { Equal, Repository } from 'typeorm';
 import * as argon2 from 'argon2';
 import { User } from './user.entity';
