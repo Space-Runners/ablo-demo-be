@@ -3,11 +3,12 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { LoginDto } from './login.dto';
+import { LoginDto } from './dtos/login.dto';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
 import { v4 } from 'uuid';
@@ -16,9 +17,10 @@ import { IJwtPayload } from './jwt-payload.interface';
 import { ResetToken } from '../user/reset-token.entity';
 import { MailService } from '../mail/mail.service';
 import { EmailTemplate } from '../mail/templates.enum';
-import { ResetPasswordDto } from './reset-password.dto';
-import { LoginResponseDto } from './login-response.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
+import { LoginResponseDto } from './dtos/login-response.dto';
 import { Equal } from 'typeorm';
+import { VerifyPasswordDto } from './dtos/verify-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -186,5 +188,11 @@ export class AuthService {
       throw new BadRequestException('Invalid token');
     }
     return this.jwtService.decode(token) || '';
+  }
+
+  verifyPassword(dto: VerifyPasswordDto) {
+    if (dto.password != process.env.PASSWORD) {
+      throw new UnauthorizedException('Invalid password');
+    }
   }
 }

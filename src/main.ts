@@ -8,30 +8,28 @@ import proxyEndpoints from './proxy-endpoints';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  if (process.env.SHOW_SWAGGER) {
-    const config = new DocumentBuilder()
-      .setTitle('Ablo API')
-      .setDescription('RESTful API Docs for Ablo')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, document);
-  }
+  const config = new DocumentBuilder()
+    .setTitle('Ablo API')
+    .setDescription('RESTful API Docs for Ablo')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
 
   app.enableCors({
     origin: [
       'http://localhost:5173',
-      'http://d1k73oboz70rlj.cloudfront.net',
-      'https://d1k73oboz70rlj.cloudfront.net',
-      'http://d3q8uvwyk3hqym.cloudfront.net',
-      'https://d3q8uvwyk3hqym.cloudfront.net',
       'https://test.ablo.ai',
       'https://web.ablo.ai',
       'https://www.ablo.ai',
       'https://ablo.ai',
     ],
   });
+
+  if (!process.env.API_KEY) {
+    throw new Error('API_KEY is not defined');
+  }
 
   // Proxy API requests to ABLO services
   app.use(

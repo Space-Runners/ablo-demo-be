@@ -22,7 +22,7 @@ describe('AuthController', () => {
     await testUtils.close();
   });
 
-  describe('login()', () => {
+  describe('POST /auth/login', () => {
     it('should return access token', async () => {
       const password = faker.internet.password();
       const user = await testUtils.createDemoUser({ password });
@@ -60,7 +60,7 @@ describe('AuthController', () => {
     });
   });
 
-  describe('register()', () => {
+  describe('POST /auth/register', () => {
     it('should return user', async () => {
       const user = {
         email: faker.internet.email(),
@@ -175,6 +175,28 @@ describe('AuthController', () => {
 
       expect(res.body.access_token).toBeDefined();
       expect(res.body.user).toBeDefined();
+    });
+  });
+
+  describe('POST /auth/verify-password', () => {
+    it('should return 200', async () => {
+      const dto = {
+        password: process.env.PASSWORD,
+      };
+
+      await request(server).post('/auth/verify-password').send(dto).expect(201);
+    });
+
+    it('should return 401 if password is incorrect', async () => {
+      const dto = {
+        password: faker.internet.password(),
+      };
+
+      await request(server).post('/auth/verify-password').send(dto).expect(401);
+    });
+
+    it('should return 400 if password is not provided', async () => {
+      await request(server).post('/auth/verify-password').send({}).expect(400);
     });
   });
 });

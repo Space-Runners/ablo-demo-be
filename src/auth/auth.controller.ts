@@ -11,7 +11,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { GoogleOAuthGuard } from './google-auth.guard';
-import { LoginDto } from './login.dto';
+import { LoginDto } from './dtos/login.dto';
 import { AuthService } from './auth.service';
 import {
   ApiExcludeEndpoint,
@@ -23,9 +23,10 @@ import { UserDto } from '../user/user.dto';
 import { UserService } from '../user/user.service';
 import { faker } from '@faker-js/faker';
 import { SocialLogin } from './social-login.enum';
-import { ForgotPasswordDto } from './forgot-password.dto';
-import { ResetPasswordDto } from './reset-password.dto';
-import { LoginResponseDto } from './login-response.dto';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
+import { LoginResponseDto } from './dtos/login-response.dto';
+import { VerifyPasswordDto } from './dtos/verify-password.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -141,5 +142,16 @@ export class AuthController {
     @Body() dto: ResetPasswordDto,
   ): Promise<LoginResponseDto> {
     return this.service.resetPassword(dto);
+  }
+
+  @ApiOperation({ summary: 'Verify password on password wall' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password verified',
+  })
+  @Post('/verify-password')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  verifyPassword(@Body() dto: VerifyPasswordDto) {
+    this.service.verifyPassword(dto);
   }
 }
