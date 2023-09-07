@@ -114,7 +114,7 @@ export class TestUtils {
   }
 
   async createDemoUser(options?: ICreateUserOptions): Promise<User> {
-    const user = await this.userService.createDemoUser(
+    const user = await this.userService.create(
       {
         email: options?.email || faker.internet.email(),
         password: options?.password || faker.internet.password(),

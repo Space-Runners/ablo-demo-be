@@ -25,6 +25,7 @@ export class AuthService {
   googleClient: OAuth2Client;
   static GUEST_EMAIL = 'guest@ablo.ai';
   static RESET_TOKEN_TIMEOUT_MINUTES = 30;
+  static MIN_PASSWORD_LENGTH = 8;
 
   constructor(
     private userService: UserService,

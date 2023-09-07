@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DemoUserDto } from './demo-user.dto';
+import { UserDto } from './user.dto';
 import { Equal, Repository } from 'typeorm';
 import * as argon2 from 'argon2';
 import { User } from './user.entity';
@@ -8,6 +8,7 @@ import { MailService } from '../mail/mail.service';
 import { RoleName } from '../auth/role-name.enum';
 import { Role } from './role.entity';
 import { ConfigService } from '@nestjs/config';
+import { HttpStatusCode } from 'axios';
 
 @Injectable()
 export class UserService {
@@ -20,7 +21,15 @@ export class UserService {
     private sendgridService: MailService,
   ) {}
 
-  async createDemoUser(newUserDto: DemoUserDto, role?: Role): Promise<User> {
+  async create(newUserDto: UserDto, role?: Role): Promise<User> {
+    // Check if user already exists
+    const existingUser = await this.repo.findOne({
+      where: { email: Equal(newUserDto.email) },
+    });
+    if (existingUser) {
+      throw new HttpException('User already exists', HttpStatusCode.Conflict);
+    }
+
     const user = this.repo.create(newUserDto);
     user.password = await argon2.hash(newUserDto.password);
     if (newUserDto.socialId) user.verified = true;
