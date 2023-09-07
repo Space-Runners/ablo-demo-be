@@ -19,7 +19,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { DemoUserDto } from '../user/demo-user.dto';
+import { UserDto } from '../user/user.dto';
 import { UserService } from '../user/user.service';
 import { faker } from '@faker-js/faker';
 import { SocialLogin } from './social-login.enum';
@@ -48,8 +48,8 @@ export class AuthController {
     description: 'Registration successful',
   })
   @Post('/register')
-  async register(@Body() dto: DemoUserDto): Promise<LoginResponseDto> {
-    await this.userService.createDemoUser(dto);
+  async register(@Body() dto: UserDto): Promise<LoginResponseDto> {
+    await this.userService.create(dto);
 
     return this.service.login({ email: dto.email, password: dto.password });
   }
@@ -71,7 +71,7 @@ export class AuthController {
       return this.service.login(existingUser, true);
     }
 
-    const newUser: DemoUserDto = {
+    const newUser: UserDto = {
       email: googleUser.email,
       firstName: googleUser.given_name,
       lastName: googleUser.family_name,
@@ -80,7 +80,7 @@ export class AuthController {
       socialId: googleUser.sub,
     };
 
-    const user = await this.userService.createDemoUser(newUser);
+    const user = await this.userService.create(newUser);
 
     return this.service.login(user);
   }
@@ -102,10 +102,10 @@ export class AuthController {
   @Post('/guest/register')
   async guestRegister(
     @Headers('client_token') guestToken: string,
-    @Body() body: DemoUserDto,
+    @Body() body: UserDto,
   ): Promise<LoginResponseDto> {
     body.id = this.service.decodeGuestToken(guestToken).toString();
-    const user = await this.userService.createDemoUser(body);
+    const user = await this.userService.create(body);
     if (!user) {
       throw new BadRequestException('Registration failed');
     }
