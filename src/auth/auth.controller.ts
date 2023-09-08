@@ -69,6 +69,11 @@ export class AuthController {
     );
 
     if (existingUser) {
+      if (!existingUser.socialLogin || !existingUser.socialId) {
+        existingUser.socialId = googleUser.sub;
+        existingUser.socialLogin = SocialLogin.GOOGLE;
+        await existingUser.save();
+      }
       return this.service.login(existingUser, true);
     }
 
