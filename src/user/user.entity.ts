@@ -5,12 +5,10 @@ import {
   CreateDateColumn,
   ManyToMany,
   JoinTable,
-  OneToMany,
   OneToOne,
   BaseEntity,
 } from 'typeorm';
 import { Role } from './role.entity';
-import { Design } from '../design/design.entity';
 import { ResetToken } from './reset-token.entity';
 
 @Entity('user')
@@ -59,9 +57,6 @@ export class User extends BaseEntity {
   @ManyToMany(() => Role)
   @JoinTable()
   roles: Role[];
-
-  @OneToMany(() => Design, (design) => design.user)
-  designs: Design[];
 
   @OneToOne(() => ResetToken, (resetToken) => resetToken.user)
   resetToken: ResetToken;
