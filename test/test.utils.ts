@@ -11,7 +11,6 @@ import { RoleName } from '../src/auth/role-name.enum';
 import { DesignService } from '../src/design/design.service';
 import { JwtAuthGuard } from '../src/auth/jwt.guard';
 import { MailService } from '../src/mail/mail.service';
-import { Design } from '../src/design/design.entity';
 import { Equal } from 'typeorm';
 
 // Set timeout to 20s (each suite recreates the DB)
@@ -86,7 +85,6 @@ export class TestUtils {
     this.designService = this.testingModule.get<DesignService>(DesignService);
     this.userService = this.testingModule.get<UserService>(UserService);
     // Repos
-    this.designRepo = this.testingModule.get(getRepositoryToken(Design));
     this.roleRepo = this.testingModule.get(getRepositoryToken(Role));
 
     this.app = this.testingModule.createNestApplication();
@@ -104,13 +102,6 @@ export class TestUtils {
   async createSuperAdmin(): Promise<User> {
     const superuser = await this.createDemoUser({ role: this.superAdminRole });
     return superuser;
-  }
-
-  async createDesign(user: User): Promise<Design> {
-    return await this.designRepo.save({
-      id: faker.string.uuid(),
-      userId: user.id,
-    });
   }
 
   async createDemoUser(options?: ICreateUserOptions): Promise<User> {
