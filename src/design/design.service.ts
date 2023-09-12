@@ -42,6 +42,11 @@ export class DesignService {
     return data;
   }
 
+  async createFull(dto: any): Promise<any> {
+    const { data } = await this.axiosInstance.post('/designs/full', dto);
+    return data;
+  }
+
   async patch(id: string, dto: any): Promise<any> {
     const { data } = await this.axiosInstance.patch(`/designs/${id}`, dto);
     return data;
