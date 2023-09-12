@@ -27,14 +27,12 @@ import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
 import { VerifyPasswordDto } from './dtos/verify-password.dto';
+import { GoogleDto } from './dtos/google.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(
-    private service: AuthService,
-    private userService: UserService,
-  ) {}
+  constructor(private service: AuthService, private userService: UserService) {}
 
   @ApiOperation({ summary: 'Login using email and password' })
   @ApiResponse({
@@ -63,9 +61,10 @@ export class AuthController {
     status: 200,
     description: 'Google login successful',
   })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @Post('/google/login')
-  async googleAuth(@Body('token') token): Promise<LoginResponseDto> {
-    const googleUser = await this.service.googleLogin(token);
+  async googleAuth(@Body() dto: GoogleDto): Promise<LoginResponseDto> {
+    const googleUser = await this.service.googleLogin(dto.token);
 
     const existingUser = await this.userService.findOneByEmail(
       googleUser.email,
