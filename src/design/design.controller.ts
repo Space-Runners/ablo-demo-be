@@ -51,6 +51,17 @@ export class DesignController {
     return this.service.create(dto);
   }
 
+  @ApiOperation({ summary: 'Create a new design (full)' })
+  @ApiResponse({
+    status: 201,
+  })
+  @Post('/designs/full')
+  @UseGuards(JwtAuthGuard)
+  async createFull(@Request() req, @Body() dto: any): Promise<any> {
+    dto.externalUserId = req.user.id;
+    return this.service.createFull(dto);
+  }
+
   @ApiOperation({ summary: 'Patch design' })
   @ApiResponse({
     status: 204,
