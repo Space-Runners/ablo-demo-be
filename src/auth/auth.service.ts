@@ -163,12 +163,22 @@ export class AuthService {
   }
 
   async googleLogin(token: string): Promise<TokenPayload> {
-    const ticket = await this.googleClient.verifyIdToken({
-      idToken: token,
-      audience: this.configService.get('GOOGLE_CLIENT_ID'),
-    });
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: token,
+        audience: this.configService.get('GOOGLE_CLIENT_ID'),
+      });
 
-    return ticket.getPayload();
+      return ticket.getPayload();
+    } catch (err) {
+      if (err.message.includes('Token used too late')) {
+        throw new UnauthorizedException('Token expired');
+      } else if (err.message.includes('Wrong number of segments in token')) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      throw err;
+    }
   }
 
   async guestLogin() {
