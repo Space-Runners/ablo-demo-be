@@ -3,11 +3,12 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { LoginDto } from './login.dto';
+import { LoginDto } from './dtos/login.dto';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
 import { v4 } from 'uuid';
@@ -16,15 +17,17 @@ import { IJwtPayload } from './jwt-payload.interface';
 import { ResetToken } from '../user/reset-token.entity';
 import { MailService } from '../mail/mail.service';
 import { EmailTemplate } from '../mail/templates.enum';
-import { ResetPasswordDto } from './reset-password.dto';
-import { LoginResponseDto } from './login-response.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
+import { LoginResponseDto } from './dtos/login-response.dto';
 import { Equal } from 'typeorm';
+import { VerifyPasswordDto } from './dtos/verify-password.dto';
 
 @Injectable()
 export class AuthService {
   googleClient: OAuth2Client;
   static GUEST_EMAIL = 'guest@ablo.ai';
   static RESET_TOKEN_TIMEOUT_MINUTES = 30;
+  static MIN_PASSWORD_LENGTH = 8;
 
   constructor(
     private userService: UserService,
@@ -111,15 +114,16 @@ export class AuthService {
     const user = await this.userService.findOneByEmail(email);
 
     if (!user) {
-      return null;
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
-    if (
-      !user.socialLogin &&
-      !isFromGoogle &&
-      !(await argon2.verify(user.password, pass))
-    ) {
-      return null;
+    if (user.socialLogin && isFromGoogle) {
+      return user;
+    }
+
+    const isVerified = await argon2.verify(user.password, pass);
+    if (!isVerified) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
     return user;
@@ -159,12 +163,22 @@ export class AuthService {
   }
 
   async googleLogin(token: string): Promise<TokenPayload> {
-    const ticket = await this.googleClient.verifyIdToken({
-      idToken: token,
-      audience: this.configService.get('GOOGLE_CLIENT_ID'),
-    });
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: token,
+        audience: this.configService.get('GOOGLE_CLIENT_ID'),
+      });
 
-    return ticket.getPayload();
+      return ticket.getPayload();
+    } catch (err) {
+      if (err.message.includes('Token used too late')) {
+        throw new UnauthorizedException('Token expired');
+      } else if (err.message.includes('Wrong number of segments in token')) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      throw err;
+    }
   }
 
   async guestLogin() {
@@ -184,5 +198,11 @@ export class AuthService {
       throw new BadRequestException('Invalid token');
     }
     return this.jwtService.decode(token) || '';
+  }
+
+  verifyPassword(dto: VerifyPasswordDto) {
+    if (dto.password != process.env.PASSWORD) {
+      throw new UnauthorizedException('Invalid password');
+    }
   }
 }

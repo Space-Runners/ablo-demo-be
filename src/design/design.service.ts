@@ -1,18 +1,11 @@
 import axios, { AxiosInstance } from 'axios';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, Repository } from 'typeorm';
-import { Design } from './design.entity';
-import { User } from '../user/user.entity';
 
 @Injectable()
 export class DesignService {
   private axiosInstance: AxiosInstance;
 
-  constructor(
-    @InjectRepository(Design)
-    private readonly repo: Repository<Design>,
-  ) {
+  constructor() {
     this.axiosInstance = axios.create({
       baseURL: process.env.API_URL,
       headers: {
@@ -26,38 +19,31 @@ export class DesignService {
   }
 
   public async checkAuth(id: string, userId: string) {
-    const design = await this.repo.findOne({
-      where: { id: Equal(id) },
-    });
-    if (!design || design.userId !== userId) {
+    const res = await this.axiosInstance.get(`/designs/${id}`);
+    if (!res.data || res.data.externalUserId !== userId) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
+    return res.data;
   }
 
   async getAllForUser(userId: string) {
-    const { data } = await this.axiosInstance.get(`/clients/designs`);
-    const designIds = (await this.repo.findBy({ userId })).map(
-      (design) => design.id,
+    const { data } = await this.axiosInstance.get(
+      `/designs?externalUserId=${userId}`,
     );
-    const designsForUser = data.filter((design) =>
-      designIds.find((id) => id === design.id),
-    );
-    return designsForUser;
-  }
-
-  async getOne(id: string): Promise<any> {
-    const { data } = await this.axiosInstance.get(`/clients/designs/${id}`);
     return data;
   }
 
-  async create(dto: any, user: User): Promise<any> {
-    const { data } = await this.axiosInstance.post('/clients/designs', dto);
-    const id = data?.id;
-    const userId = user?.id;
-    await this.repo.save({
-      id,
-      userId,
-    });
+  async getOne(id: string): Promise<any> {
+    return (await this.axiosInstance.get(`/designs/${id}`))?.data;
+  }
+
+  async create(dto: any): Promise<any> {
+    const { data } = await this.axiosInstance.post('/designs', dto);
+    return data;
+  }
+
+  async createFull(dto: any): Promise<any> {
+    const { data } = await this.axiosInstance.post('/designs/full', dto);
     return data;
   }
 
@@ -67,7 +53,6 @@ export class DesignService {
   }
 
   async delete(id: string): Promise<any> {
-    await this.axiosInstance.delete(`/clients/designs/${id}`);
-    return this.repo.delete({ id });
+    return await this.axiosInstance.delete(`/designs/${id}`);
   }
 }

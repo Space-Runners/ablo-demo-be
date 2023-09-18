@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { DesignService } from './design.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Design } from './design.entity';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 
 @Controller()
@@ -25,7 +24,7 @@ export class DesignController {
   })
   @Get('/designs')
   @UseGuards(JwtAuthGuard)
-  async getAll(@Request() req): Promise<Design[]> {
+  async getAll(@Request() req) {
     const designs = await this.service.getAllForUser(req.user.id);
     return designs;
   }
@@ -37,8 +36,8 @@ export class DesignController {
   @Get('/designs/:id')
   @UseGuards(JwtAuthGuard)
   async getOne(@Param('id') id: string, @Request() req) {
-    await this.service.checkAuth(id, req.user.id);
-    return this.service.getOne(id);
+    const result = await this.service.checkAuth(id, req.user.id);
+    return result;
   }
 
   @ApiOperation({ summary: 'Create a new design' })
@@ -48,7 +47,19 @@ export class DesignController {
   @Post('/designs')
   @UseGuards(JwtAuthGuard)
   async create(@Request() req, @Body() dto: any): Promise<any> {
-    return this.service.create(dto, req.user);
+    dto.externalUserId = req.user.id;
+    return this.service.create(dto);
+  }
+
+  @ApiOperation({ summary: 'Create a new design (full)' })
+  @ApiResponse({
+    status: 201,
+  })
+  @Post('/designs/full')
+  @UseGuards(JwtAuthGuard)
+  async createFull(@Request() req, @Body() dto: any): Promise<any> {
+    dto.externalUserId = req.user.id;
+    return this.service.createFull(dto);
   }
 
   @ApiOperation({ summary: 'Patch design' })
@@ -74,6 +85,6 @@ export class DesignController {
   @UseGuards(JwtAuthGuard)
   async delete(@Param('id') id: string, @Request() req): Promise<void> {
     await this.service.checkAuth(id, req.user.id);
-    return this.service.delete(id);
+    await this.service.delete(id);
   }
 }
