@@ -3,6 +3,7 @@ const proxyEndpoints: string[] = [
   '/designs/*/sides',
   '/generate/*',
   '/sizes',
+  '/styles',
   '/templates',
 ];
 
