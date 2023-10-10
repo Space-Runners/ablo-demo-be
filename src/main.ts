@@ -23,6 +23,7 @@ async function bootstrap() {
       'https://test.ablo.ai',
       'https://web.ablo.ai',
       'https://www.ablo.ai',
+      'https://demo.ablo.ai',
       'https://ablo.ai',
     ],
   });
