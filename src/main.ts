@@ -19,12 +19,19 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
+      // Local
       'http://localhost:5173',
+      // Ablo
+      'https://ablo.ai',
+      'https://balmain.ablo.ai',
+      'https://balmain-staging.ablo.ai',
       'https://test.ablo.ai',
       'https://web.ablo.ai',
       'https://www.ablo.ai',
       'https://demo.ablo.ai',
-      'https://ablo.ai',
+      // Render
+      'https://ablo-balmain-fe.onrender.com',
+      'https://ablo-balmain-fe-production.onrender.com',
     ],
   });
 
