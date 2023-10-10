@@ -29,8 +29,8 @@ async function bootstrap() {
       'https://web.ablo.ai',
       'https://www.ablo.ai',
       // Render
-      'https://ablo-balmain-fe.onrender.com/',
-      'https://ablo-balmain-fe-production.onrender.com/',
+      'https://ablo-balmain-fe.onrender.com',
+      'https://ablo-balmain-fe-production.onrender.com',
     ],
   });
 
