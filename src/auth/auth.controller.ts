@@ -1,9 +1,7 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
-  Headers,
   Post,
   Request,
   UseGuards,
@@ -32,7 +30,10 @@ import { GoogleDto } from './dtos/google.dto';
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private service: AuthService, private userService: UserService) {}
+  constructor(
+    private service: AuthService,
+    private userService: UserService,
+  ) {}
 
   @ApiOperation({ summary: 'Login using email and password' })
   @ApiResponse({
@@ -98,27 +99,6 @@ export class AuthController {
   @UseGuards(GoogleOAuthGuard)
   googleAuthRedirect(@Request() req) {
     return this.service.googleLogin(req);
-  }
-
-  @ApiOperation({ summary: 'Login to Demo as a guest' })
-  @Post('/guest/login')
-  async guestLogin() {
-    return this.service.guestLogin();
-  }
-
-  @ApiOperation({ summary: 'Register to Demo as a guest' })
-  @Post('/guest/register')
-  async guestRegister(
-    @Headers('client_token') guestToken: string,
-    @Body() body: UserDto,
-  ): Promise<LoginResponseDto> {
-    body.id = this.service.decodeGuestToken(guestToken).toString();
-    const user = await this.userService.create(body);
-    if (!user) {
-      throw new BadRequestException('Registration failed');
-    }
-
-    return this.service.login(user);
   }
 
   @ApiOperation({
