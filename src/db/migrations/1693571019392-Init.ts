@@ -87,7 +87,6 @@ export class Init1693571019392 implements MigrationInterface {
       queryRunner.manager.create<Role>(Role, [
         { name: 'admin' },
         { name: 'user' },
-        { name: 'guest' },
       ]),
     );
     const adminRole = roles.find((r) => r.name === 'admin');

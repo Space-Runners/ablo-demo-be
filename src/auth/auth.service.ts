@@ -25,7 +25,6 @@ import { VerifyPasswordDto } from './dtos/verify-password.dto';
 @Injectable()
 export class AuthService {
   googleClient: OAuth2Client;
-  static GUEST_EMAIL = 'guest@ablo.ai';
   static RESET_TOKEN_TIMEOUT_MINUTES = 30;
   static MIN_PASSWORD_LENGTH = 8;
 
@@ -136,6 +135,20 @@ export class AuthService {
     });
   }
 
+  verifyAuthHeader(authHeader: string) {
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      try {
+        const result = this.jwtService.verify(token, {
+          secret: this.configService.get('JWT_SECRET'),
+        });
+        return !!result;
+      } catch {
+        return false;
+      }
+    }
+  }
+
   async login(
     login: LoginDto,
     isFromGoogle = false,
@@ -179,25 +192,6 @@ export class AuthService {
 
       throw err;
     }
-  }
-
-  async guestLogin() {
-    const payload = {
-      email: 'guest@ablo.ai',
-      id: v4(),
-      roles: ['guest'],
-    };
-
-    return {
-      access_token: this.generateJwt(payload),
-    };
-  }
-
-  decodeGuestToken(token: string) {
-    if (!token) {
-      throw new BadRequestException('Invalid token');
-    }
-    return this.jwtService.decode(token) || '';
   }
 
   verifyPassword(dto: VerifyPasswordDto) {
