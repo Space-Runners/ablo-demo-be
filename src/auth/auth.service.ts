@@ -135,6 +135,20 @@ export class AuthService {
     });
   }
 
+  verifyAuthHeader(authHeader: string) {
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      try {
+        const result = this.jwtService.verify(token, {
+          secret: this.configService.get('JWT_SECRET'),
+        });
+        return !!result;
+      } catch {
+        return false;
+      }
+    }
+  }
+
   async login(
     login: LoginDto,
     isFromGoogle = false,

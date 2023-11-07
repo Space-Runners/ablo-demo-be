@@ -26,6 +26,7 @@ import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
 import { VerifyPasswordDto } from './dtos/verify-password.dto';
 import { GoogleDto } from './dtos/google.dto';
+import { Public } from './public.decorator';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -40,6 +41,7 @@ export class AuthController {
     status: 201,
     description: 'Login successful',
   })
+  @Public()
   @Post('/login')
   async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
     return this.service.login(loginDto);
@@ -50,6 +52,7 @@ export class AuthController {
     status: 201,
     description: 'Registration successful',
   })
+  @Public()
   @Post('/register')
   async register(@Body() dto: UserDto): Promise<LoginResponseDto> {
     await this.userService.create(dto);
@@ -63,6 +66,7 @@ export class AuthController {
     description: 'Google login successful',
   })
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @Public()
   @Post('/google/login')
   async googleAuth(@Body() dto: GoogleDto): Promise<LoginResponseDto> {
     const googleUser = await this.service.googleLogin(dto.token);
@@ -109,6 +113,7 @@ export class AuthController {
     status: 200,
     description: 'Reset password email sent',
   })
+  @Public()
   @Post('/forgot-password')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
@@ -123,6 +128,7 @@ export class AuthController {
     status: 200,
     description: 'Password successfully reset',
   })
+  @Public()
   @Post('/reset-password')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async resetPassword(
@@ -136,6 +142,7 @@ export class AuthController {
     status: 200,
     description: 'Password verified',
   })
+  @Public()
   @Post('/verify-password')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   verifyPassword(@Body() dto: VerifyPasswordDto) {
