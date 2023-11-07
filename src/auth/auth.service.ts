@@ -143,10 +143,9 @@ export class AuthService {
           secret: this.configService.get('JWT_SECRET'),
         });
         return !!result;
-      } catch {
-        return false;
-      }
+      } catch {}
     }
+    return false;
   }
 
   async login(
