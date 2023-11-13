@@ -51,7 +51,7 @@ export class UserService {
   }
 
   static createVerifyEmailUrl(email: string, url: string): string {
-    const buff = new Buffer(email);
+    const buff = Buffer.from(email);
     const base64data = buff.toString('base64');
     const verifyEmailUrl = `${url}/verify-email?token=${base64data}`;
 
@@ -67,7 +67,7 @@ export class UserService {
   }
 
   async verifyEmail(token: string): Promise<User> {
-    const buff = new Buffer(token, 'base64');
+    const buff = Buffer.from(token, 'base64');
     const decodeText = buff.toString('ascii');
 
     const user = await this.repo.findOne({
