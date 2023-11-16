@@ -31,7 +31,6 @@ export class MailService {
     templateId: string,
     substitutions: { [key: string]: string | number | boolean },
   ) {
-    console.log('Sending email to', receiver);
     const msg = {
       to: receiver,
       from: {
