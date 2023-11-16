@@ -21,11 +21,9 @@ export class MailService {
   }
 
   async sendWelcomeEmail(email: string, firstName: string) {
-    await this.send(email, EmailTemplate.GENERIC, {
-      subject: 'Welcome to Ablo',
-      title: `Hey ${firstName}, welcome to Ablo`,
-      buttonText: 'Start using Ablo',
-      buttonUrl: process.env.CLIENT_DASHBOARD_URL,
+    console.log('Sending welcome email to', email);
+    await this.send(email, EmailTemplate.WELCOME, {
+      firstName,
     });
   }
 
@@ -34,6 +32,7 @@ export class MailService {
     templateId: string,
     substitutions: { [key: string]: string | number | boolean },
   ) {
+    console.log('Sending email to', receiver);
     const msg = {
       to: receiver,
       from: {

@@ -18,7 +18,7 @@ export class UserService {
     @InjectRepository(User)
     private repo: Repository<User>,
     private configService: ConfigService,
-    private sendgridService: MailService,
+    private mailService: MailService,
   ) {}
 
   async create(newUserDto: UserDto, role?: Role): Promise<User> {
@@ -50,16 +50,22 @@ export class UserService {
     return user;
   }
 
-  static createVerifyEmailUrl(email: string, url: string): string {
+  static getVerifyToken(email: string): string {
     const buff = Buffer.from(email);
-    const base64data = buff.toString('base64');
-    const verifyEmailUrl = `${url}/verify-email?token=${base64data}`;
+    const token = buff.toString('base64');
+
+    return token;
+  }
+
+  static createVerifyEmailUrl(email: string, url: string): string {
+    const token = UserService.getVerifyToken(email);
+    const verifyEmailUrl = `${url}/verify-email?token=${token}`;
 
     return verifyEmailUrl;
   }
 
   async sendVerificationEmail(user: User, url: string) {
-    await this.sendgridService.sendVerificationEmail(
+    await this.mailService.sendVerificationEmail(
       user.email,
       user.firstName,
       UserService.createVerifyEmailUrl(user.email, url),
@@ -67,6 +73,7 @@ export class UserService {
   }
 
   async verifyEmail(token: string): Promise<User> {
+    console.log('verifyEmail', token);
     const buff = Buffer.from(token, 'base64');
     const decodeText = buff.toString('ascii');
 
@@ -81,7 +88,7 @@ export class UserService {
     user.verified = true;
     await this.repo.save(user);
 
-    await this.sendgridService.sendWelcomeEmail(user.email, user.firstName);
+    await this.mailService.sendWelcomeEmail(user.email, user.firstName);
     return user;
   }
 

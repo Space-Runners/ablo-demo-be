@@ -34,6 +34,7 @@ export class TestUtils {
   app: INestApplication;
   authService: AuthService;
   designService: DesignService;
+  mailService: MailService
   userService: UserService;
   designRepo;
   roleRepo;
@@ -51,7 +52,9 @@ export class TestUtils {
     const mailServiceMock = {
       sendVerificationEmail: jest.fn(),
       send: jest.fn(),
+      sendWelcomeEmail: jest.fn(),
     };
+
     const designServiceMock = {
       getAllForUser: async (userId: string) =>
         await this.designRepo.findBy({ userId }),
@@ -83,7 +86,9 @@ export class TestUtils {
     // Services
     this.authService = this.testingModule.get<AuthService>(AuthService);
     this.designService = this.testingModule.get<DesignService>(DesignService);
+    this.mailService = this.testingModule.get<MailService>(MailService);
     this.userService = this.testingModule.get<UserService>(UserService);
+    
     // Repos
     this.roleRepo = this.testingModule.get(getRepositoryToken(Role));
 
