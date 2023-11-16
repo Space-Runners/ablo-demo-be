@@ -31,10 +31,7 @@ import { Public } from './public.decorator';
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(
-    private service: AuthService,
-    private userService: UserService,
-  ) {}
+  constructor(private service: AuthService, private userService: UserService) {}
 
   @ApiOperation({ summary: 'Login using email and password' })
   @ApiResponse({
