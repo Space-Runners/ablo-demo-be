@@ -21,7 +21,6 @@ export class MailService {
   }
 
   async sendWelcomeEmail(email: string, firstName: string) {
-    console.log('Sending welcome email to', email);
     await this.send(email, EmailTemplate.WELCOME, {
       firstName,
     });
