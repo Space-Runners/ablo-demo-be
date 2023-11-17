@@ -21,11 +21,8 @@ export class MailService {
   }
 
   async sendWelcomeEmail(email: string, firstName: string) {
-    await this.send(email, EmailTemplate.GENERIC, {
-      subject: 'Welcome to Ablo',
-      title: `Hey ${firstName}, welcome to Ablo`,
-      buttonText: 'Start using Ablo',
-      buttonUrl: process.env.CLIENT_DASHBOARD_URL,
+    await this.send(email, EmailTemplate.WELCOME, {
+      firstName,
     });
   }
 
