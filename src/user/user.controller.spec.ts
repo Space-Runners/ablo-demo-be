@@ -41,4 +41,28 @@ describe('UserController', () => {
       expect(profile3.body.firstName).toBe(user3.firstName);
     });
   });
+
+  describe('POST /users/verify-email/:token', () => {
+    it('should verify email', async () => {
+      const user = await testUtils.createDemoUser({
+        email: 'karim@spacerunners.com',
+      });
+      expect(user.verified).toBe(false);
+
+      const spyOnSendWelcomeEmail = jest.spyOn(
+        testUtils.mailService,
+        'sendWelcomeEmail',
+      );
+
+      const token = UserService.getVerifyToken(user.email);
+
+      await request(server).get(`/users/verify-email/${token}`).expect(200);
+
+      const userFromDb = await userService.findOneByEmail(user.email);
+      expect(userFromDb.verified).toBe(true);
+
+      expect(spyOnSendWelcomeEmail).toBeCalledTimes(1);
+      expect(spyOnSendWelcomeEmail).toBeCalledWith(user.email, user.firstName);
+    });
+  });
 });
