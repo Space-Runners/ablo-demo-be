@@ -28,7 +28,7 @@ export class DesignService {
 
   async getAllForUser(userId: string) {
     const { data } = await this.axiosInstance.get(
-      `/designs/client?externalUserId=${userId}`,
+      `/designs?externalUserId=${userId}`,
     );
     return data;
   }
